@@ -27,6 +27,7 @@ import freed.cam.apis.basecamera.CameraWrapperInterface;
 import freed.cam.apis.basecamera.modules.IntervalModule;
 import freed.cam.apis.basecamera.modules.ModuleHandlerAbstract;
 import freed.cam.apis.camera1.CameraHolder.Frameworks;
+import freed.cam.apis.camera1.modules.AfBracketModule;
 import freed.cam.apis.camera1.modules.BracketModule;
 import freed.cam.apis.camera1.modules.PictureModule;
 import freed.cam.apis.camera1.modules.PictureModuleMTK;
@@ -91,6 +92,11 @@ public class ModuleHandler extends ModuleHandlerAbstract
             StackingModule sTax = new StackingModule(cameraUiWrapper);
             moduleList.put(sTax.ModuleName(), sTax);
         }
+
+
+            AfBracketModule afBracketModule = new AfBracketModule(cameraUiWrapper);
+            moduleList.put(afBracketModule.ModuleName(),afBracketModule);
+
 
         //BurstModule burstModule = new BurstModule(this.cameraHolder, soundPlayer, appSettingsManager, moduleEventHandler);
         //moduleList.put(burstModule.ModuleName(), burstModule);

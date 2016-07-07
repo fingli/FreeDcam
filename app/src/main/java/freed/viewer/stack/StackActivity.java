@@ -57,6 +57,7 @@ import static freed.cam.apis.camera1.parameters.modes.StackModeParameter.*;
  */
 public class StackActivity extends ActivityAbstract
 {
+    private final String TAG = StackActivity.class.getSimpleName();
     private String[] filesToStack = null;
     private RenderScriptHandler renderScriptHandler;
     private int stackMode = 0;
@@ -94,6 +95,7 @@ public class StackActivity extends ActivityAbstract
 
     private void processStack()
     {
+        Logger.d(TAG, "Process Stack: Mode:"+ stackMode);
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(filesToStack[0],options);
@@ -104,44 +106,59 @@ public class StackActivity extends ActivityAbstract
         tbIn2.setY(mHeight);
         renderScriptHandler.SetAllocsTypeBuilder(tbIn2,tbIn2, Allocation.USAGE_SCRIPT,Allocation.USAGE_SCRIPT);
 
-        renderScriptHandler.imagestack.set_Width(mWidth);
-        renderScriptHandler.imagestack.set_Height(mHeight);
-        renderScriptHandler.imagestack.set_yuvinput(false);
-        renderScriptHandler.imagestack.set_gCurrentFrame(renderScriptHandler.GetIn());
-        renderScriptHandler.imagestack.set_gLastFrame(renderScriptHandler.GetOut());
-        if (stackMode ==  6)
+        if (stackMode < 7)
         {
-            ScriptField_MinMaxPixel medianMinMax = new ScriptField_MinMaxPixel(renderScriptHandler.GetRS(), mWidth * mHeight);
-            renderScriptHandler.imagestack.bind_medianMinMaxPixel(medianMinMax);
+            renderScriptHandler.imagestack.set_Width(mWidth);
+            renderScriptHandler.imagestack.set_Height(mHeight);
+            renderScriptHandler.imagestack.set_yuvinput(false);
+            renderScriptHandler.imagestack.set_gCurrentFrame(renderScriptHandler.GetIn());
+            renderScriptHandler.imagestack.set_gLastFrame(renderScriptHandler.GetOut());
+            if (stackMode == 6) {
+                ScriptField_MinMaxPixel medianMinMax = new ScriptField_MinMaxPixel(renderScriptHandler.GetRS(), mWidth * mHeight);
+                renderScriptHandler.imagestack.bind_medianMinMaxPixel(medianMinMax);
+            }
         }
-        for (String f : filesToStack)
+        else
         {
-            renderScriptHandler.GetIn().copyFrom(BitmapFactory.decodeFile(f));
-            switch (stackMode)
+            renderScriptHandler.focus_stack.set_gCurrentFrame(renderScriptHandler.GetIn());
+            renderScriptHandler.focus_stack.set_gLastFrame(renderScriptHandler.GetOut());
+        }
+        for (int i = 0; i< filesToStack.length;i++)
+        {
+            String f = filesToStack[i];
+            Logger.d(TAG, "Stack File:" + f);
+            if (i == 0)
             {
-                case 0: //AVARAGE
-                    renderScriptHandler.imagestack.forEach_stackimage_avarage(renderScriptHandler.GetOut());
-                    break;
-                case 1: //AVARAGE1x2
-                    renderScriptHandler.imagestack.forEach_stackimage_avarage1x2(renderScriptHandler.GetOut());
-                    break;
-                case 2: //AVARAGE1x3
-                    renderScriptHandler.imagestack.forEach_stackimage_avarage1x3(renderScriptHandler.GetOut());
-                    break;
-                case 3: // AVARAGE3x3
-                    renderScriptHandler.imagestack.forEach_stackimage_avarage3x3(renderScriptHandler.GetOut());
-                    break;
-                case 4: // LIGHTEN
-                    renderScriptHandler.imagestack.forEach_stackimage_lighten(renderScriptHandler.GetOut());
-                    break;
-                case 5: // LIGHTEN_V
-                    renderScriptHandler.imagestack.forEach_stackimage_lightenV(renderScriptHandler.GetOut());
-                    break;
-                case 6: //MEDIAN
-                    renderScriptHandler.imagestack.forEach_stackimage_median(renderScriptHandler.GetOut());
-                    break;
-                case 7: //focus
-                    break;
+                renderScriptHandler.GetOut().copyFrom(BitmapFactory.decodeFile(f));
+            }
+            else {
+                renderScriptHandler.GetIn().copyFrom(BitmapFactory.decodeFile(f));
+                switch (stackMode) {
+                    case 0: //AVARAGE
+                        renderScriptHandler.imagestack.forEach_stackimage_avarage(renderScriptHandler.GetOut());
+                        break;
+                    case 1: //AVARAGE1x2
+                        renderScriptHandler.imagestack.forEach_stackimage_avarage1x2(renderScriptHandler.GetOut());
+                        break;
+                    case 2: //AVARAGE1x3
+                        renderScriptHandler.imagestack.forEach_stackimage_avarage1x3(renderScriptHandler.GetOut());
+                        break;
+                    case 3: // AVARAGE3x3
+                        renderScriptHandler.imagestack.forEach_stackimage_avarage3x3(renderScriptHandler.GetOut());
+                        break;
+                    case 4: // LIGHTEN
+                        renderScriptHandler.imagestack.forEach_stackimage_lighten(renderScriptHandler.GetOut());
+                        break;
+                    case 5: // LIGHTEN_V
+                        renderScriptHandler.imagestack.forEach_stackimage_lightenV(renderScriptHandler.GetOut());
+                        break;
+                    case 6: //MEDIAN
+                        renderScriptHandler.imagestack.forEach_stackimage_median(renderScriptHandler.GetOut());
+                        break;
+                    case 7: //focus
+                        renderScriptHandler.focus_stack.forEach_stack(renderScriptHandler.GetOut());
+                        break;
+                }
             }
         }
         Bitmap outputBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
@@ -149,6 +166,7 @@ public class StackActivity extends ActivityAbstract
         File file = new File(filesToStack[0]);
         String parent = file.getParent();
         saveBitmapToFile(outputBitmap,new File(parent+"/" + StringUtils.getStringDatePAttern().format(new Date()) + "_Stack.jpg"));
+        Logger.d(TAG,"Stack Done!");
     }
 
     private void saveBitmapToFile(Bitmap bitmap, File file)

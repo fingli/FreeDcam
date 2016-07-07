@@ -54,6 +54,7 @@ public class RenderScriptHandler
     public ScriptC_contrast contrastRS;
     public ScriptC_starfinder starfinderRS;
     public ScriptIntrinsicBlur blurRS;
+    public ScriptC_focus_stack focus_stack;
 
     public RenderScriptHandler(Context context)
     {
@@ -73,6 +74,7 @@ public class RenderScriptHandler
                 contrastRS = new ScriptC_contrast(mRS);
                 blurRS = ScriptIntrinsicBlur.create(mRS, Element.U8_4(mRS));
                 starfinderRS = new ScriptC_starfinder(mRS);
+                focus_stack = new ScriptC_focus_stack(mRS);
             }
         });
 
