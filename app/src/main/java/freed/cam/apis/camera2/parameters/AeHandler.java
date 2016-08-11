@@ -32,7 +32,6 @@ import freed.cam.apis.basecamera.parameters.manual.AbstractManualParameter;
 import freed.cam.apis.basecamera.parameters.manual.AbstractManualShutter;
 import freed.cam.apis.camera2.CameraHolderApi2;
 import freed.cam.apis.camera2.parameters.modes.BaseModeApi2;
-import freed.utils.DeviceUtils.Devices;
 import freed.utils.Logger;
 
 /**
@@ -262,18 +261,29 @@ public class AeHandler
             Logger.d(TAG, "max exposuretime:" + cameraHolder.characteristics.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE).getUpper());
             Logger.d(TAG, "min exposuretime:" + cameraHolder.characteristics.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE).getLower());
             //866 975 130 = 0,8sec
-            if (cameraUiWrapper.GetAppSettingsManager().getDevice() == Devices.LG_G4 && VERSION.SDK_INT <= VERSION_CODES.LOLLIPOP_MR1)
-                millimax = 60000000;
-            else if(cameraUiWrapper.GetAppSettingsManager().getDevice() == Devices.OnePlusTwo)
-                millimax = 32000000;
-            else if (cameraUiWrapper.GetAppSettingsManager().getDevice() == Devices.LG_G4 && VERSION.SDK_INT == VERSION_CODES.M)
-                millimax = 45000000;
-            else if (cameraUiWrapper.GetAppSettingsManager().getDevice() == Devices.Samsung_S6_edge_plus)
-                millimax = 10000000;
-            else if (cameraUiWrapper.GetAppSettingsManager().getDevice() == Devices.Moto_X_Style_Pure_Play)
-                millimax = 10000000;
-            else
-                millimax = cameraHolder.characteristics.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE).getUpper().intValue() / 1000;
+            switch(cameraUiWrapper.GetAppSettingsManager().getDevice())
+            {
+                case LG_G4:
+                    if (VERSION.SDK_INT <= VERSION_CODES.LOLLIPOP_MR1)
+                        millimax = 60000000;
+                    else
+                        millimax = 45000000;
+                    break;
+                case OnePlusTwo:
+                    millimax = 32000000;
+                    break;
+                case Samsung_S6_edge_plus:
+                    millimax = 10000000;
+                    break;
+                case Moto_X_Style_Pure_Play:
+                    millimax = 10000000;
+                    break;
+                default:
+                    millimax = cameraHolder.characteristics.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE).getUpper().intValue() / 1000;
+                    if (millimax == 0)
+                        millimax = 800000;
+                    break;
+            }
             int millimin = cameraHolder.characteristics.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE).getLower().intValue() / 1000;
             stringvalues = getSupportedShutterValues(millimin, millimax,false);
         }

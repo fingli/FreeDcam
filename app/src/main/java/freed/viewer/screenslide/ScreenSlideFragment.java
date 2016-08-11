@@ -118,7 +118,6 @@ public class ScreenSlideFragment extends Fragment implements OnPageChangeListene
     //hold the showed folder_to_show
     private FileHolder folder_to_show;
 
-    private boolean waitForCameraHasLoaded;
     private ActivityInterface activityInterface;
     View view;
 
@@ -219,36 +218,17 @@ public class ScreenSlideFragment extends Fragment implements OnPageChangeListene
         });
         mPagerAdapter = new ScreenSlidePagerAdapter(getChildFragmentManager());
         mPager.setAdapter(mPagerAdapter);
+        mPager.setOffscreenPageLimit(2);
         mPager.addOnPageChangeListener(this);
-        if (!waitForCameraHasLoaded || activityInterface.getFiles() == null || activityInterface.getFiles().size() ==0)
-            LoadFiles();
-
         return view;
     }
 
-    public void setWaitForCameraHasLoaded()
-    {
-        waitForCameraHasLoaded = true;
-    }
 
     public void SetPostition(int position)
     {
         mPager.setCurrentItem(position, false);
     }
 
-    public void LoadFiles()
-    {
-        if (activityInterface.getFiles() == null || activityInterface.getFiles().size() == 0) {
-            activityInterface.LoadFreeDcamDCIMDirsFiles();
-        }
-
-        if(activityInterface.getFiles() != null ) {
-            if (activityInterface.getFiles().size() > 0 && defitem == -1) {
-                mPager.setCurrentItem(0);
-            } else
-                mPager.setCurrentItem(defitem);
-        }
-    }
 
     public ScreenSlideFragment()
     {
@@ -258,7 +238,7 @@ public class ScreenSlideFragment extends Fragment implements OnPageChangeListene
 
     public void NotifyDATAhasChanged()
     {
-        if (mPagerAdapter != null)
+        if (mPagerAdapter != null || mPager != null)
             mPagerAdapter.notifyDataSetChanged();
     }
 
@@ -350,7 +330,13 @@ public class ScreenSlideFragment extends Fragment implements OnPageChangeListene
                 case DialogInterface.BUTTON_POSITIVE:
                     activityInterface.DeleteFile(folder_to_show);
                     MediaScannerManager.ScanMedia(getContext(), folder_to_show.getFile());
-                    activityInterface.LoadFolder(activityInterface.getFiles().get(0).getParent(),FormatTypes.all);
+                    if (activityInterface.getFiles() != null && activityInterface.getFiles().size() >0)
+                        activityInterface.LoadFolder(activityInterface.getFiles().get(0).getParent(),FormatTypes.all);
+                    else
+                    {
+                        activityInterface.LoadFreeDcamDCIMDirsFiles();
+                        updateUi(null);
+                    }
                     break;
 
                 case DialogInterface.BUTTON_NEGATIVE:
@@ -391,6 +377,7 @@ public class ScreenSlideFragment extends Fragment implements OnPageChangeListene
             filename.setText("No Files");
             histogram.setVisibility(View.GONE);
             deleteButton.setVisibility(View.GONE);
+            exifinfo.setVisibility(View.GONE);
             play.setVisibility(View.GONE);
         }
     }

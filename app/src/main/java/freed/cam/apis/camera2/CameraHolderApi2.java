@@ -577,43 +577,18 @@ public class CameraHolderApi2 extends CameraHolderAbstract
         }
     }
 
-    public boolean isLegacyDevice()
-    {
-        return characteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
-    }
-
-    public static boolean IsLegacy(AppSettingsManager appSettingsManager,Context context)
+    public static boolean IsLegacy(Context context)
     {
         boolean legacy = true;
-        Semaphore mCameraOpenCloseLock = new Semaphore(1);
-        try
-        {
-            if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
-                throw new RuntimeException("Time out waiting to lock camera opening.");
-            }
+        try {
             CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
             CameraCharacteristics characteristics = manager.getCameraCharacteristics("0");
             legacy = characteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
-            manager = null;
-            characteristics = null;
         }
-        catch (CameraAccessException | VerifyError | InterruptedException e) {
-            Logger.exception(e);
-        } catch (Exception ex)
-        {
+        catch (Throwable ex) {
             Logger.exception(ex);
         }
-        finally
-        {
-
-            mCameraOpenCloseLock.release();
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                Logger.exception(e);
-            }
-        }
-        return  legacy;
+        return legacy;
     }
 
     public class CaptureSessionHandler
@@ -728,6 +703,7 @@ public class CameraHolderApi2 extends CameraHolderAbstract
 
         public void StopRepeatingCaptureSession()
         {
+            Logger.d(TAG, "StopRepeatingCaptureSession");
             if (mCaptureSession != null)
             try {
                 mCaptureSession.stopRepeating();
@@ -743,6 +719,7 @@ public class CameraHolderApi2 extends CameraHolderAbstract
 
         public void StartRepeatingCaptureSession()
         {
+            Logger.d(TAG, "StartRepeatingCaptureSession");
             if (mCaptureSession == null)
                 return;
             try {
@@ -755,6 +732,7 @@ public class CameraHolderApi2 extends CameraHolderAbstract
 
         public void StartRepeatingCaptureSession(@Nullable CaptureCallback listener)
         {
+            Logger.d(TAG, "StartRepeatingCaptureSession with Custom CaptureCallback");
             if (mCaptureSession == null)
                 return;
             try {
@@ -803,6 +781,7 @@ public class CameraHolderApi2 extends CameraHolderAbstract
 
         public void StartCaptureSession()
         {
+            Logger.d(TAG, "StartCaptureSession");
             if (mCaptureSession == null)
                 return;
             try {
@@ -815,6 +794,7 @@ public class CameraHolderApi2 extends CameraHolderAbstract
 
         public void StartCaptureSession(@Nullable CaptureCallback listener)
         {
+            Logger.d(TAG, "StartCaptureSession with Custom CaptureCallback");
             if (mCaptureSession == null)
                 return;
             try {

@@ -114,7 +114,7 @@ public class AfBracketModule extends ModuleAbstract implements Camera.PictureCal
         changeCaptureState(ModuleHandlerAbstract.CaptureStates.image_capture_stop);
         cameraHolder.StartPreview();
         picsTaken++;
-        File file = new File(StringUtils.getFilePath(appSettingsManager.GetWriteExternal(), "Af" + picsTaken+ ".jpg"));
+        File file = new File(cameraUiWrapper.getActivityInterface().getStorageHandler().getNewFilePath(appSettingsManager.GetWriteExternal(), "Af" + picsTaken+ ".jpg"));
         saveBytesToFile(data,file);
         scanAndFinishFile(file);
         if (picsTaken < IMAGES_TO_TAKE)

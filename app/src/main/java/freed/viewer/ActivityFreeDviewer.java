@@ -23,6 +23,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -32,9 +33,13 @@ import android.widget.FrameLayout;
 
 import com.troop.freedcam.R;
 
+import java.io.File;
 import java.util.List;
 
 import freed.ActivityAbstract;
+import freed.utils.FreeDPool;
+import freed.utils.LocationHandler;
+import freed.utils.Logger;
 import freed.viewer.gridview.GridViewFragment;
 import freed.viewer.holder.FileHolder;
 import freed.viewer.screenslide.ScreenSlideFragment;
@@ -57,7 +62,29 @@ public class ActivityFreeDviewer extends ActivityAbstract
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        LoadDCIMDirs();
+        if (hasExternalSDPermission())
+            init();
+    }
+
+    @Override
+    protected void externalSDPermissionGranted(boolean granted)
+    {
+        if (granted)
+            init();
+        else
+            finish();
+    }
+
+    private void init()
+    {
+
+        FreeDPool.Execute(new Runnable() {
+            @Override
+            public void run() {
+                LoadDCIMDirs();
+            }
+        });
+
         mShortAnimationDuration = getResources().getInteger(
                 android.R.integer.config_shortAnimTime);
         setContentView(R.layout.freedviewer_activity);
@@ -94,17 +121,29 @@ public class ActivityFreeDviewer extends ActivityAbstract
         screenSlideFragment.NotifyDATAhasChanged();
     }
 
+    @Override
+    public LocationHandler getLocationHandler() {
+        return null;
+    }
+
     /**
      * Loads all Folders from DCIM dir from internal and external SD
      * and notfiy gridview and screenslide that files got changed
      */
     @Override
-    public void LoadDCIMDirs() {
+    public void LoadDCIMDirs()
+    {
         super.LoadDCIMDirs();
-        if (gridViewFragment != null)
-            gridViewFragment.NotifyDataSetChanged();
-        if (screenSlideFragment != null)
-            screenSlideFragment.NotifyDATAhasChanged();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (gridViewFragment != null)
+                    gridViewFragment.NotifyDataSetChanged();
+                if (screenSlideFragment != null)
+                    screenSlideFragment.NotifyDATAhasChanged();
+            }
+        });
+
     }
 
     @Override
@@ -317,4 +356,27 @@ public class ActivityFreeDviewer extends ActivityAbstract
 
     }
 
+    @Override
+    public void WorkHasFinished(final FileHolder fileHolder)
+    {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                fileHolder.UpdateImage();
+            }
+        });
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        //super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == gridViewFragment.STACK_REQUEST || requestCode == gridViewFragment.DNGCONVERT_REQUEST)
+        {
+            FileHolder f = getFiles().get(0).getParent();
+            LoadFolder(f, gridViewFragment.formatsToShow);
+        }
+
+    }
 }

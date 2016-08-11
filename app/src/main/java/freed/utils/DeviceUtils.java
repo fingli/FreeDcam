@@ -68,9 +68,11 @@ public class DeviceUtils
         LG_G2pro,
         LG_G3,
         LG_G4,
+        Lumigon_T3,
         MeizuMX4_MTK,
         MeizuMX5_MTK,
         Meizu_m2Note_MTK,
+        Mlais_M52_Red_Note_MTK,
         Moto_X2k14,
         Moto_X_Style_Pure_Play,
         MotoG3,
@@ -80,7 +82,9 @@ public class DeviceUtils
         OnePlusTwo,
         p8,
         p8lite,
+        Prestigio_Multipad_Color,
         Xiaomi_RedmiNote,
+        Xiaomi_Redmi2,
         Xiaomi_RedmiNote2_MTK,
         Retro_MTK,
         Samsung_S6_edge,
@@ -91,13 +95,17 @@ public class DeviceUtils
         SonyC5_MTK,
         Sony_XperiaL,
         THL5000_MTK,
+        Umi_Rome_X,
         Vivo_Xplay3s,
+        Wileyfox_Swift,
+        Mi_Max,
         XiaomiMI3W,
         XiaomiMI4W,
         XiaomiMI4C,
         XiaomiMI5,
         XiaomiMI_Note_Pro,
         Xiaomi_Redmi_Note3,
+        Xiaomi_Redmi3,
         Yu_Yureka,
         ZTE_ADV,
         ZTEADVIMX214,
@@ -166,6 +174,8 @@ public class DeviceUtils
             return Devices.LG_G3;
         else if (isDevice(res.getStringArray(array.lg_g4)))
             return Devices.LG_G4;
+        else if(isDevice(res.getStringArray(array.Lumigon_T3)))
+            return Devices.Lumigon_T3;
         else if (isDevice(res.getStringArray(array.meizu_mx4)))
             return Devices.MeizuMX4_MTK;
         else if (isDevice(res.getStringArray(array.meizu_mx5)))
@@ -184,6 +194,8 @@ public class DeviceUtils
             return Devices.OnePlusTwo;
         else if (isDevice(res.getStringArray(array.Xiaomi_RedmiNote)))
             return Devices.Xiaomi_RedmiNote;
+        else if(isDevice(res.getStringArray(array.Xiaomi_Redmi2)))
+            return Devices.Xiaomi_Redmi2;
         else if (isDevice(res.getStringArray(array.Xiaomi_RedmiNote2)))
             return Devices.Xiaomi_RedmiNote2_MTK;
         else if (isDevice(res.getStringArray(array.Retro)))
@@ -204,8 +216,14 @@ public class DeviceUtils
             return Devices.Sony_XperiaL;
         else if (isDevice(res.getStringArray(array.thl5000)))
             return Devices.THL5000_MTK;
+        else if (isDevice(res.getStringArray(array.umi_rome_x)))
+            return Devices.Umi_Rome_X;
         else if (isDevice(res.getStringArray(array.Vivo_Xplay3s)))
             return Devices.Vivo_Xplay3s;
+        else if(isDevice(res.getStringArray(array.wilexfox_swift)))
+            return Devices.Wileyfox_Swift;
+        else if (isDevice(res.getStringArray(array.mi_max)))
+            return Devices.Mi_Max;
         else if (isDevice(res.getStringArray(array.Xiaomi_Mi3)))
             return Devices.XiaomiMI3W;
         else if (isDevice(res.getStringArray(array.Xiaomi_Mi4)))
@@ -218,6 +236,8 @@ public class DeviceUtils
             return Devices.XiaomiMI_Note_Pro;
         else if (isDevice(res.getStringArray(array.Xiaomi_Mi_Note3_Pro)))
             return Devices.Xiaomi_Redmi_Note3;
+        else if (isDevice(res.getStringArray(array.xiaomi_redmi3)))
+            return Devices.Xiaomi_Redmi3;
         else if (isDevice(res.getStringArray(array.YuYureka)))
             return Devices.Yu_Yureka;
         else if (isDevice(res.getStringArray(array.zteadv)))
@@ -236,6 +256,8 @@ public class DeviceUtils
             return Devices.p8lite;
         else if(isDevice(res.getStringArray(array.Huawei_p8)))
             return Devices.p8;
+        else if (isDevice(res.getStringArray(array.prestigio_multipad_color)))
+            return Devices.Prestigio_Multipad_Color;
         else if(isDevice(res.getStringArray(array.Huawei_Honor6)))
             return Devices.huawei_honor6;
         else if(isDevice(res.getStringArray(array.Alcatel_985N)))

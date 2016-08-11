@@ -44,7 +44,6 @@ import freed.utils.FreeDPool;
 import freed.utils.Logger;
 import freed.utils.RenderScriptHandler;
 import freed.utils.ScriptField_MinMaxPixel;
-import freed.utils.StringUtils;
 
 /**
  * Created by troop on 16.05.2016.
@@ -123,7 +122,7 @@ public class StackingModuleApi2 extends AbstractModuleApi2
 
             if (mProcessingTask != null) {
 
-                while (mProcessingTask.working) {
+                while (mProcessingTask.processingFrame) {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
@@ -167,7 +166,7 @@ public class StackingModuleApi2 extends AbstractModuleApi2
         FreeDPool.Execute(new Runnable() {
             @Override
             public void run() {
-                File stackedImg = new File(StringUtils.getFilePath(appSettingsManager.GetWriteExternal(), "_stack.jpg"));
+                File stackedImg = new File(cameraUiWrapper.getActivityInterface().getStorageHandler().getNewFilePath(appSettingsManager.GetWriteExternal(), "_stack.jpg"));
                 SaveBitmapToFile(outputBitmap,stackedImg);
                 changeCaptureState(CaptureStates.continouse_capture_stop);
                 scanAndFinishFile(stackedImg);
@@ -194,7 +193,7 @@ public class StackingModuleApi2 extends AbstractModuleApi2
         cameraHolder.CaptureSessionH.CloseCaptureSession();
         if (mProcessingTask != null) {
 
-            while (mProcessingTask.working)
+            while (mProcessingTask.processingFrame)
             {
                 keepstacking = false;
                 try {
@@ -222,11 +221,9 @@ public class StackingModuleApi2 extends AbstractModuleApi2
     @TargetApi(VERSION_CODES.KITKAT)
     class ProcessingTask implements Runnable, OnBufferAvailableListener {
         private int mPendingFrames;
-        private final Allocation mInputAllocation;
-        private boolean working;
+        private boolean processingFrame;
         public ProcessingTask(Allocation input) {
-            mInputAllocation = input;
-            mInputAllocation.setOnBufferAvailableListener(this);
+            renderScriptHandler.GetIn().setOnBufferAvailableListener(this);
         }
         @Override
         public void onBufferAvailable(Allocation a) {
@@ -250,36 +247,39 @@ public class StackingModuleApi2 extends AbstractModuleApi2
             // Get to newest input
             for (int i = 0; i < pendingFrames; i++)
             {
-                mInputAllocation.ioReceive();
+                renderScriptHandler.GetIn().ioReceive();
             }
             if (renderScriptHandler.GetOut() == null)
                 return;
-            if (keepstacking)
+            if (!processingFrame)
             {
+                processingFrame = true;
+                if (keepstacking) {
 
-                // Run processing pass
-                if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.AVARAGE))
-                    renderScriptHandler.imagestack.forEach_stackimage_avarage(renderScriptHandler.GetOut());
-                else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.AVARAGE1x2))
-                    renderScriptHandler.imagestack.forEach_stackimage_avarage1x2(renderScriptHandler.GetOut());
-                else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.AVARAGE1x3))
-                    renderScriptHandler.imagestack.forEach_stackimage_avarage1x3(renderScriptHandler.GetOut());
-                else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.AVARAGE3x3))
-                    renderScriptHandler.imagestack.forEach_stackimage_avarage3x3(renderScriptHandler.GetOut());
-                else if(ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.LIGHTEN))
-                    renderScriptHandler.imagestack.forEach_stackimage_lighten(renderScriptHandler.GetOut());
-                else if(ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.LIGHTEN_V))
-                    renderScriptHandler.imagestack.forEach_stackimage_lightenV(renderScriptHandler.GetOut());
-                else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.MEDIAN))
-                {
-                    renderScriptHandler.imagestack.forEach_stackimage_median(renderScriptHandler.GetOut());
+                    // Run processing pass
+                    if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.AVARAGE))
+                        renderScriptHandler.imagestack.forEach_stackimage_avarage(renderScriptHandler.GetOut());
+                    else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.AVARAGE1x2))
+                        renderScriptHandler.imagestack.forEach_stackimage_avarage1x2(renderScriptHandler.GetOut());
+                    else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.AVARAGE1x3))
+                        renderScriptHandler.imagestack.forEach_stackimage_avarage1x3(renderScriptHandler.GetOut());
+                    else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.AVARAGE3x3))
+                        renderScriptHandler.imagestack.forEach_stackimage_avarage3x3(renderScriptHandler.GetOut());
+                    else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.LIGHTEN))
+                        renderScriptHandler.imagestack.forEach_stackimage_lighten(renderScriptHandler.GetOut());
+                    else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.LIGHTEN_V))
+                        renderScriptHandler.imagestack.forEach_stackimage_lightenV(renderScriptHandler.GetOut());
+                    else if (ParameterHandler.imageStackMode.GetValue().equals(StackModeParameter.MEDIAN)) {
+                        renderScriptHandler.imagestack.forEach_stackimage_median(renderScriptHandler.GetOut());
+                    } else if (cameraUiWrapper.GetParameterHandler().imageStackMode.GetValue().equals(StackModeParameter.EXPOSURE)) {
+                        renderScriptHandler.imagestack.forEach_stackimage_exposure(renderScriptHandler.GetOut());
+                    }
+                } else {
+                    renderScriptHandler.yuvToRgbIntrinsic.forEach(renderScriptHandler.GetOut());
                 }
+                renderScriptHandler.GetOut().ioSend();
+                processingFrame = false;
             }
-            else
-            {
-                renderScriptHandler.yuvToRgbIntrinsic.forEach(renderScriptHandler.GetOut());
-            }
-            renderScriptHandler.GetOut().ioSend();
         }
     }
 

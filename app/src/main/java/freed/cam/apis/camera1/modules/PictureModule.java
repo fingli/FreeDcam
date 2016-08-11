@@ -20,6 +20,7 @@
 package freed.cam.apis.camera1.modules;
 
 import android.hardware.Camera;
+import android.location.Location;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
@@ -36,10 +37,10 @@ import freed.cam.apis.basecamera.modules.ModuleHandlerAbstract.CaptureStates;
 import freed.cam.apis.camera1.CameraHolder;
 import freed.cam.apis.camera1.parameters.ParametersHandler;
 import freed.jni.RawToDng;
+import freed.utils.AppSettingsManager;
 import freed.utils.DeviceUtils.Devices;
 import freed.utils.FreeDPool;
 import freed.utils.Logger;
-import freed.utils.StringUtils;
 import freed.utils.StringUtils.FileEnding;
 
 
@@ -99,9 +100,12 @@ public class PictureModule extends ModuleAbstract implements Camera.PictureCallb
                     Logger.d(this.TAG,"ZSL state after turning it off:" + cameraUiWrapper.GetParameterHandler().ZSL.GetValue());
                 }
             }
+            cameraUiWrapper.GetParameterHandler().SetPictureOrientation(cameraUiWrapper.getActivityInterface().getOrientation());
             changeCaptureState(CaptureStates.image_capture_start);
             waitForPicture = true;
             burstcount = 0;
+            if (cameraUiWrapper.GetAppSettingsManager().getString(AppSettingsManager.SETTING_LOCATION).equals(KEYS.ON))
+                cameraHolder.SetLocation(cameraUiWrapper.getActivityInterface().getLocationHandler().getCurrentLocation());
             cameraHolder.TakePicture(this);
             Logger.d(this.TAG,"TakePicture");
         }
@@ -112,6 +116,7 @@ public class PictureModule extends ModuleAbstract implements Camera.PictureCallb
     @Override
     public void InitModule()
     {
+        super.InitModule();
         Logger.d(TAG,"InitModule");
         cameraUiWrapper.GetParameterHandler().PreviewFormat.SetValue("yuv420sp",true);
         if (cameraUiWrapper.GetParameterHandler().VideoHDR != null && cameraUiWrapper.GetParameterHandler().VideoHDR.IsSupported() && !cameraUiWrapper.GetParameterHandler().VideoHDR.GetValue().equals("off"))
@@ -198,9 +203,9 @@ public class PictureModule extends ModuleAbstract implements Camera.PictureCallb
     protected File getFile(String fileending)
     {
         if (cameraUiWrapper.GetParameterHandler().Burst != null && cameraUiWrapper.GetParameterHandler().Burst.IsSupported() && cameraUiWrapper.GetParameterHandler().Burst.GetValue() > 1)
-            return new File(StringUtils.getFilePathBurst(appSettingsManager.GetWriteExternal(), fileending, burstcount));
+            return new File(cameraUiWrapper.getActivityInterface().getStorageHandler().getNewFilePathBurst(appSettingsManager.GetWriteExternal(), fileending, burstcount));
         else
-            return new File(StringUtils.getFilePath(appSettingsManager.GetWriteExternal(), fileending));
+            return new File(cameraUiWrapper.getActivityInterface().getStorageHandler().getNewFilePath(appSettingsManager.GetWriteExternal(), fileending));
     }
 
     protected void saveDng(byte[] data, File file)
@@ -212,15 +217,19 @@ public class PictureModule extends ModuleAbstract implements Camera.PictureCallb
         double Longitude = 0;
         String Provider = "ASCII";
         long gpsTime = 0;
-        if (cameraHolder.gpsLocation != null)
+        if (cameraUiWrapper.GetAppSettingsManager().getString(AppSettingsManager.SETTING_LOCATION).equals(KEYS.ON))
         {
-            Logger.d(this.TAG, "Has GPS");
-            Altitude = cameraHolder.gpsLocation.getAltitude();
-            Latitude = cameraHolder.gpsLocation.getLatitude();
-            Longitude = cameraHolder.gpsLocation.getLongitude();
-            Provider = cameraHolder.gpsLocation.getProvider();
-            gpsTime = cameraHolder.gpsLocation.getTime();
-            dngConverter.SetGPSData(Altitude, Latitude, Longitude, Provider, gpsTime);
+            if (cameraUiWrapper.getActivityInterface().getLocationHandler().getCurrentLocation() != null)
+            {
+                Location location = cameraUiWrapper.getActivityInterface().getLocationHandler().getCurrentLocation();
+                Logger.d(this.TAG, "location:" + location.toString());
+                Altitude = location.getAltitude();
+                Latitude = location.getLatitude();
+                Longitude = location.getLongitude();
+                Provider = location.getProvider();
+                gpsTime = location.getTime();
+                dngConverter.SetGPSData(Altitude, Latitude, Longitude, Provider, gpsTime);
+            }
         }
         float fnum = cameraUiWrapper.GetParameterHandler().getDevice().GetFnumber();
         float focal = cameraUiWrapper.GetParameterHandler().getDevice().GetFocal();

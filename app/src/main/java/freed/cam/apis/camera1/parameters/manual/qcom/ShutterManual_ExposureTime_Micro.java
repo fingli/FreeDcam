@@ -54,8 +54,15 @@ public class ShutterManual_ExposureTime_Micro extends AbstractManualShutter
         super(cameraUiWrapper);
         stringvalues = shuttervalues;
         this.key_value = key_value;
+        this.parameters = parameters;
         parameters.set(key_value, "0");
         isSupported = true;
+        isVisible = true;
+    }
+
+    @Override
+    public boolean IsSetSupported() {
+        return true;
     }
 
     /**
@@ -102,13 +109,8 @@ public class ShutterManual_ExposureTime_Micro extends AbstractManualShutter
     }
 
     @Override
-    public boolean IsSetSupported() {
-        return isSupported;
-    }
-
-    @Override
     public boolean IsVisible() {
-        return IsSupported();
+        return isSupported;
     }
 
     @Override

@@ -24,7 +24,6 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.LruCache;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -47,7 +46,7 @@ public class CacheHelper
     private boolean mDiskCacheStarting = true;
     public static final int DISK_CACHE_SIZE = 1024 * 1024 * 200;
     private final String DISK_CACHE_SUBDIR = "thumbnails";
-    private final LruCache<String, Bitmap> mMemoryCache;
+    //private final LruCache<String, Bitmap> mMemoryCache;
     final String TAG = CacheHelper.class.getSimpleName();
 
     public CacheHelper(Context context)
@@ -55,7 +54,7 @@ public class CacheHelper
         // Get max available VM memory, exceeding this amount will throw an
         // OutOfMemory exception. Stored in kilobytes as LruCache takes an
         // int in its constructor.
-        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        /*int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
 
         // Use 1/8th of the available memory for this memory cache.
         int cacheSize = maxMemory / 4;
@@ -67,7 +66,7 @@ public class CacheHelper
                 // number of items.
                 return bitmap.getByteCount() / 1024;
             }
-        };
+        };*/
 
         File cacheDir = getDiskCacheDir(context);
         new InitDiskCacheTask().execute(cacheDir);
@@ -97,11 +96,11 @@ public class CacheHelper
             return;
         }
 
-        // Add to memory cache
+        /*// Add to memory cache
         if (mMemoryCache != null) {
 
             mMemoryCache.put(data, value);
-        }
+        }*/
 
         synchronized (mDiskCacheLock) {
             // Add to disk cache
@@ -204,7 +203,7 @@ public class CacheHelper
     }
 
 
-    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+    /*public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
         if (getBitmapFromMemCache(key) == null) {
             mMemoryCache.put(key, bitmap);
         }
@@ -212,7 +211,7 @@ public class CacheHelper
 
     public Bitmap getBitmapFromMemCache(String key) {
         return mMemoryCache.get(key);
-    }
+    }*/
 
 
 }

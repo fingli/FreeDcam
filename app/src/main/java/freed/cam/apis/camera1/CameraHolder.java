@@ -57,7 +57,6 @@ public class CameraHolder extends CameraHolderAbstract
     private Surface previewSurfaceHolder;
 
     public Frameworks DeviceFrameWork = Frameworks.Normal;
-    public Location gpsLocation;
     public int Orientation;
 
     public int CurrentCamera;
@@ -325,7 +324,6 @@ public class CameraHolder extends CameraHolderAbstract
     @Override
     public void SetLocation(Location loc)
     {
-        gpsLocation = loc;
         if(!isRdy)
             return;
 
@@ -349,19 +347,6 @@ public class CameraHolder extends CameraHolderAbstract
     @Override
     public void StartFocus() {
         cameraUiWrapper.getFocusHandler().StartFocus();
-    }
-
-    public void SetOrientation(int or)
-    {
-        if (!isRdy || or == Orientation)
-            return;
-        Orientation = or;
-
-        if (mCamera != null) {
-            Parameters paras = mCamera.getParameters();
-            paras.setRotation(or);
-            mCamera.setParameters(paras);
-        }
     }
 
     public void SetCameraRotation(int rotation)

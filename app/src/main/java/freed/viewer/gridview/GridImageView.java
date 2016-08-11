@@ -54,7 +54,7 @@ public class GridImageView extends AbsoluteLayout implements FileHolder.EventHan
     private TextView folderTextView;
     private ImageView checkBox;
     private ImageView sdcard;
-    private BaseHolder fileHolder;
+    private FileHolder fileHolder;
     private int mImageThumbSize;
     private ProgressBar progressBar;
     private final String TAG = GridImageView.class.getSimpleName();
@@ -107,7 +107,7 @@ public class GridImageView extends AbsoluteLayout implements FileHolder.EventHan
     public BaseHolder getFileHolder(){return fileHolder;}
 
 
-    public void SetEventListner(BaseHolder fileHolder)
+    public void SetEventListner(FileHolder fileHolder)
     {
         this.fileHolder = fileHolder;
         SetViewState(fileHolder.GetCurrentViewState());
@@ -161,6 +161,16 @@ public class GridImageView extends AbsoluteLayout implements FileHolder.EventHan
     {
 //        checkBox.setChecked(selected);
 //        invalidate();
+    }
+
+    @Override
+    public void updateImage() {
+        final Bitmap bitmap = bitmapHelper.getBitmap(fileHolder, true);
+        if (bitmap != null)
+        {
+            imageView.setImageBitmap(bitmap);
+            progressBar.setVisibility(View.GONE);
+        }
     }
 
     private void setChecked(boolean checked) {
@@ -219,7 +229,7 @@ public class GridImageView extends AbsoluteLayout implements FileHolder.EventHan
         public void run()
         {
             Logger.d(TAG, "load file:" + fileHolder.getFile().getName());
-            final Bitmap bitmap = bitmapHelper.getBitmap(fileHolder.getFile(), true, mImageThumbSize, mImageThumbSize);
+            final Bitmap bitmap = bitmapHelper.getBitmap(fileHolder, true);
             if (imageviewRef != null && bitmap != null) {
                 final GridImageView imageView = imageviewRef.get();
                 if (imageView != null && imageView.getFileHolder() == fileHolder)
@@ -242,7 +252,8 @@ public class GridImageView extends AbsoluteLayout implements FileHolder.EventHan
                 imageView.post(new Runnable() {
                     @Override
                     public void run() {
-                        progressBar.setVisibility(View.GONE);
+                        if (bitmap != null)
+                            progressBar.setVisibility(View.GONE);
                     }
                 });
             }

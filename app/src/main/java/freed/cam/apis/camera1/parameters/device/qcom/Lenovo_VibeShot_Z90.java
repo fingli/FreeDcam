@@ -43,10 +43,10 @@ import freed.utils.Logger;
  */
 public class Lenovo_VibeShot_Z90 extends BaseQcomNew
 {
-    private AeHandlerVibeShotZ90 aeHandlerVibeShotZ90;
+    //private AeHandlerVibeShotZ90 aeHandlerVibeShotZ90;
     public Lenovo_VibeShot_Z90(Camera.Parameters parameters, CameraWrapperInterface cameraUiWrapper) {
         super(parameters, cameraUiWrapper);
-        aeHandlerVibeShotZ90 = new AeHandlerVibeShotZ90(parameters,cameraUiWrapper);
+        //aeHandlerVibeShotZ90 = new AeHandlerVibeShotZ90(parameters,cameraUiWrapper);
     }
 
     @Override
@@ -68,12 +68,12 @@ public class Lenovo_VibeShot_Z90 extends BaseQcomNew
     @Override
     public ManualParameterInterface getExposureTimeParameter()
     {
-        return aeHandlerVibeShotZ90.getShutterManual();
+        return null;// aeHandlerVibeShotZ90.getShutterManual();
     }
 
     @Override
     public ManualParameterInterface getIsoParameter() {
-        return aeHandlerVibeShotZ90.getManualIso();
+        return null;// aeHandlerVibeShotZ90.getManualIso();
     }
 
     class AeHandlerVibeShotZ90 extends AE_Handler_Abstract
@@ -260,6 +260,8 @@ public class Lenovo_VibeShot_Z90 extends BaseQcomNew
             {
                 parameters.set("aec-force-linecount", "0");
                 parameters.set("aec-force-snap-linecount", "0");
+                parameters.set("aec-force-snap-exp", "0");
+                parameters.set("aec-force-exp", "0");
             }
             else
             {
@@ -270,8 +272,10 @@ public class Lenovo_VibeShot_Z90 extends BaseQcomNew
                     shutterstring = "" + a;
                 }
                 currentInt = value;
-                parameters.set("aec-force-linecount", FLOATtoThirty(shutterstring));
-                parameters.set("aec-force-snap-linecount", FLOATtoThirty(shutterstring));
+                parameters.set("aec-force-linecount", 1642);
+                parameters.set("aec-force-snap-linecount", 1642);
+                parameters.set("aec-force-snap-exp", FLOATtoThirty(shutterstring));
+                parameters.set("aec-force-exp", FLOATtoThirty(shutterstring));
                 ThrowCurrentValueStringCHanged(stringvalues[value]);
             }
 

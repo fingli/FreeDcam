@@ -25,9 +25,11 @@ import android.os.Build.VERSION_CODES;
 import android.renderscript.Allocation;
 import android.renderscript.Allocation.MipmapControl;
 import android.renderscript.Element;
+import android.renderscript.RSRuntimeException;
 import android.renderscript.RenderScript;
 import android.renderscript.RenderScript.Priority;
 import android.renderscript.ScriptIntrinsicBlur;
+import android.renderscript.ScriptIntrinsicColorMatrix;
 import android.renderscript.ScriptIntrinsicYuvToRGB;
 import android.renderscript.Type.Builder;
 import android.view.Surface;
@@ -54,7 +56,14 @@ public class RenderScriptHandler
     public ScriptC_contrast contrastRS;
     public ScriptC_starfinder starfinderRS;
     public ScriptIntrinsicBlur blurRS;
+    public ScriptIntrinsicColorMatrix colorMatrix;
     public ScriptC_focus_stack focus_stack;
+
+    private boolean sucessfullLoaded = false;
+
+    public boolean isSucessfullLoaded() {
+        return this.sucessfullLoaded;
+    }
 
     public RenderScriptHandler(Context context)
     {
@@ -63,18 +72,25 @@ public class RenderScriptHandler
         FreeDPool.Execute(new Runnable() {
             @Override
             public void run() {
-
-
-                ScriptFocusPeakApi2 = new ScriptC_focus_peak(mRS);
-                yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(mRS, Element.U8_4(mRS));
-                ScriptFocusPeakApi1 = new ScriptC_focus_peak_cam1(mRS);
-                imagestack = new ScriptC_imagestack(mRS);
-                focuspeak_argb = new ScriptC_focuspeak_argb(mRS);
-                brightnessRS = new ScriptC_brightness(mRS);
-                contrastRS = new ScriptC_contrast(mRS);
-                blurRS = ScriptIntrinsicBlur.create(mRS, Element.U8_4(mRS));
-                starfinderRS = new ScriptC_starfinder(mRS);
-                focus_stack = new ScriptC_focus_stack(mRS);
+                try {
+                    ScriptFocusPeakApi2 = new ScriptC_focus_peak(mRS);
+                    yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(mRS, Element.U8_4(mRS));
+                    ScriptFocusPeakApi1 = new ScriptC_focus_peak_cam1(mRS);
+                    imagestack = new ScriptC_imagestack(mRS);
+                    focuspeak_argb = new ScriptC_focuspeak_argb(mRS);
+                    brightnessRS = new ScriptC_brightness(mRS);
+                    contrastRS = new ScriptC_contrast(mRS);
+                    blurRS = ScriptIntrinsicBlur.create(mRS, Element.U8_4(mRS));
+                    starfinderRS = new ScriptC_starfinder(mRS);
+                    colorMatrix = ScriptIntrinsicColorMatrix.create(mRS);
+                    focus_stack = new ScriptC_focus_stack(mRS);
+                    sucessfullLoaded = true;
+                }
+                catch (RSRuntimeException ex)
+                {
+                    Logger.exception(ex);
+                    sucessfullLoaded = false;
+                }
             }
         });
 
