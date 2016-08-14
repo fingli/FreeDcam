@@ -219,16 +219,19 @@ public class StackActivity extends ActivityAbstract
             renderScriptHandler.focus_stack.set_gOrginalFrame(renderScriptHandler.GetIn());
             final Allocation mAllocationfocusmap = Allocation.createTyped(renderScriptHandler.GetRS(), tbIn2.create(), Allocation.MipmapControl.MIPMAP_NONE,   Allocation.USAGE_SCRIPT);
             renderScriptHandler.focus_stack.set_gStackFrame(mAllocationfocusmap);
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            renderScriptHandler.focus_stack.set_width(mWidth);
+            renderScriptHandler.focus_stack.set_height(mHeight);
+
 
             FreeDPool.Execute(new Runnable() {
                 @Override
                 public void run() {
 
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     int count = 0;
                     for (String f : filesToStack)
                     {
@@ -240,27 +243,39 @@ public class StackActivity extends ActivityAbstract
                             return;
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                            renderScriptHandler.blurRS.setRadius(20f);
-                            renderScriptHandler.blurRS.forEach(renderScriptHandler.GetOut());
-                            renderScriptHandler.GetOut().copyTo(outputBitmap);
+                            //TODO align images
+
+                            //gray input
+                            renderScriptHandler.colorMatrix.setGreyscale();
+                            renderScriptHandler.colorMatrix.forEach(renderScriptHandler.GetIn(), renderScriptHandler.GetIn());
+                            renderScriptHandler.GetIn().copyTo(outputBitmap);
                             setBitmapToImageView(outputBitmap);
-                            renderScriptHandler.GetIn().copyFrom(renderScriptHandler.GetOut());
+
+                            //blur input
+                            renderScriptHandler.blurRS.setRadius(0.2f);
+                            renderScriptHandler.blurRS.forEach(renderScriptHandler.GetIn());
+                            renderScriptHandler.GetIn().copyTo(outputBitmap);
+                            setBitmapToImageView(outputBitmap);
+                            //apply laplace
                             renderScriptHandler.colorMatrix.setColorMatrix(laplacian);
                             renderScriptHandler.colorMatrix.forEach(renderScriptHandler.GetIn(), renderScriptHandler.GetOut());
                             renderScriptHandler.GetOut().copyTo(outputBitmap);
                             setBitmapToImageView(outputBitmap);
-                            renderScriptHandler.GetIn().copyFrom(renderScriptHandler.GetOut());
-                            renderScriptHandler.blurRS.setRadius(20f);
+                            //blur result again
+                            /*renderScriptHandler.blurRS.setRadius(1f);
                             renderScriptHandler.blurRS.forEach(renderScriptHandler.GetOut());
                             renderScriptHandler.GetOut().copyTo(outputBitmap);
-                            setBitmapToImageView(outputBitmap);
+                            setBitmapToImageView(outputBitmap);*/
+                            //get focused areas
                             renderScriptHandler.GetIn().copyFrom(BitmapFactory.decodeFile(f));
                             renderScriptHandler.focus_stack.forEach_stack(mAllocationfocusmap);
                             mAllocationfocusmap.copyTo(outputBitmap);
                             setBitmapToImageView(outputBitmap);
                         }
                     }
-
+                    File file = new File(filesToStack[0]);
+                    String parent = file.getParent();
+                    saveBitmapToFile(outputBitmap, new File(parent + "/" + getStorageHandler().getNewFileDatedName("_Stack.jpg")));
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
